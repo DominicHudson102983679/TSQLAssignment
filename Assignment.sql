@@ -144,7 +144,7 @@ BEGIN
         IF @pprice < 0 OR @pprice > 999.99
             THROW 50050, 'Price out of range', 1
         
-        INSERT INTO PRODUCT (ProdID, ProdName, Selling_Price, Sales_YTD)
+        INSERT INTO PRODUCT (PRODID, PRODNAME, SELLING_PRICE, SALES_YTD)
         VALUES (@pprodid, @pprodname, @pprice, 0);
 
     END TRY
@@ -157,8 +157,11 @@ END;
 
 GO
 
+
+/* not inserting into PRODUCT */
 EXEC ADD_PRODUCT @pprodid = 1, @pprodname = 'chicken', @pprice = 50.00;
 
 Select *
 From Product;
+
 
