@@ -141,7 +141,7 @@ BEGIN
         IF @pprodid < 1000 OR @pprodid > 2500
             THROW 50040, 'Product ID out of range', 1
         
-        IF @pprice < 0 OR @pprice > 999.99
+        ELSE IF @pprice < 0 OR @pprice > 999.99
             THROW 50050, 'Price out of range', 1
         
         INSERT INTO PRODUCT (PRODID, PRODNAME, SELLING_PRICE, SALES_YTD)
@@ -150,6 +150,18 @@ BEGIN
     END TRY
 
     BEGIN CATCH
+
+        IF error_number() = 2627
+            THROW 50030, 'Duplicate Product ID', 1
+        ELSE IF error_number() = 50040
+            THROW
+        ELSE IF error_number() = 50050
+            THROW
+        ELSE
+            BEGIN
+                DECLARE @errormessage NVARCHAR(max) = error_message();
+                THROW 50000, @errormessage, 1
+            END
 
     END CATCH;
 
