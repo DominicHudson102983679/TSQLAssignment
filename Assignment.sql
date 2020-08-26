@@ -61,10 +61,10 @@ GO
 
 */
 
-/* ----------------------------------------------------------------------------- COMPLETED */
+/* ADD_CUSTOMER ----------------------------------------------------------------------------- 1/22 COMPLETED */
+
 
 /*
-
 IF OBJECT_ID('ADD_CUSTOMER') IS NOT NULL
 DROP PROCEDURE ADD_CUSTOMER;
 
@@ -102,14 +102,18 @@ DELETE from customer;
 
 GO
 
-EXEC ADD_CUSTOMER @pcustID = 1, @pcustname = 'testdude2';
-EXEC ADD_CUSTOMER @pcustID = 500, @pcustname = 'testdude3';
 
+EXEC ADD_CUSTOMER @pcustID = 2, @pcustname = 'testdude3';
+EXEC ADD_CUSTOMER @pcustID = 3, @pcustname = 'testdude3';
+
+select * from customer
 */
 
-/* --------------------------------------------------------------------------------- */
+
+/* DELETE_ALL_CUSTOMERS --------------------------------------------------------------------------------- 2/22 COMPLETED */
 
 /*
+
 IF OBJECT_ID('DELETE_ALL_CUSTOMERS') IS NOT NULL
 DROP PROCEDURE DELETE_ALL_CUSTOMERS;
 
@@ -121,12 +125,34 @@ BEGIN
 
     BEGIN TRY
 
-        DELETE * FROM CUSTOMER;
+        DELETE FROM customer;
+        PRINT (CONCAT(@@rowcount, ' customers deleted'));
+
+    END TRY
+
+    BEGIN CATCH
+        
+        BEGIN
+            DECLARE @errormessage nvarchar(max) = error_message();
+            throw 50000, @errormessage, 1
+        END;
+
+    END CATCH;
+END;
+
+GO
+
+exec DELETE_ALL_CUSTOMERS;
+
+GO
+
+select * from customer;
 
 */
 
-/* --------------------------------------------------------------------------------- */
+/* ADD_PRODUCT --------------------------------------------------------------------------------- 3/22 COMPLETED */
 
+/*
 IF OBJECT_ID('ADD_PRODUCT') IS NOT NULL
 DROP PROCEDURE ADD_PRODUCT;
 
@@ -170,10 +196,143 @@ END;
 GO
 
 
-/* not inserting into PRODUCT */
-EXEC ADD_PRODUCT @pprodid = 1, @pprodname = 'chicken', @pprice = 50.00;
+added to ADD_PRODUCT successfully 
+EXEC ADD_PRODUCT @pprodid = 1001, @pprodname = 'chicken', @pprice = 50.00;
 
 Select *
 From Product;
+*/
+
+/* DELETE_ALL_PRODUCTS --------------------------------------------------------------------------------- 4/22 COMPLETED */
+
+/*
+
+IF OBJECT_ID('DELETE_ALL_PRODUCTS') IS NOT NULL
+DROP PROCEDURE DELETE_ALL_PRODUCTS;
+
+GO
+
+create procedure DELETE_ALL_PRODUCTS AS
+
+BEGIN
+
+    BEGIN TRY
+
+        DELETE FROM product
+        print (concat(@@rowcount, ' products deleted'))
+
+    END TRY
+
+    BEGIN CATCH
+
+        BEGIN
+            DECLARE @errormessage nvarchar(max) = error_message();
+            throw 50000, @errormessage, 1
+        END
+
+    END CATCH;
+
+END
+
+go
+
+exec add_product @pprodid = 1002, @pprodname = 'chicken', @pprice = 50.00;
+exec add_product @pprodid = 1003, @pprodname = 'chicken', @pprice = 50.00;
+exec add_product @pprodid = 1004, @pprodname = 'chicken', @pprice = 50.00;
+
+exec DELETE_ALL_PRODUCTS;
+
+select * from product;
+
+*/
+
+/* GET_CUSTOMER_STRING --------------------------------------------------------------------------------- 5/22 */
+
+/*
+IF OBJECT_ID('GET_CUSTOMER_STRING') IS NOT NULL
+DROP PROCEDURE GET_CUSTOMER_STRING;
+
+go
+
+create procedure GET_CUSTOMER_STRING @pcustid int, @preturnstring nvarchar(100) AS
+
+BEGIN
+
+    BEGIN TRY
 
 
+
+    END TRY
+
+    BEGIN CATCH
+        BEGIN
+        END
+    END CATCH;
+
+END;
+*/
+
+/* UPD_CUST_SALESYTD --------------------------------------------------------------------------------- 6/22 */
+
+
+
+/* GET_PROD_STRING --------------------------------------------------------------------------------- 7/22 */
+
+
+
+/* UPD_PROD_SALESYTD --------------------------------------------------------------------------------- 8/22 */
+
+
+
+/* UPD_CUSTOMER_STATUS --------------------------------------------------------------------------------- 9/22 */
+
+
+
+/* ADD_SIMPLE_SALE --------------------------------------------------------------------------------- 10/22 */
+
+
+
+/* SUM_CUSTOMER_SALESYTD --------------------------------------------------------------------------------- 11/22 */
+
+
+
+/* SUM_PRODUCT_SALESYTD --------------------------------------------------------------------------------- 12/22 */
+
+
+
+/* GET_ALL_CUSTOMERS --------------------------------------------------------------------------------- 13/22 */
+
+
+
+/* GET_ALL_PRODUCTS --------------------------------------------------------------------------------- 14/22 */
+
+
+
+/* ADD_LOCATION --------------------------------------------------------------------------------- 15/22 */
+
+
+
+/* ADD_COMPLEX_SALE --------------------------------------------------------------------------------- 16/22 */
+
+
+
+/* GET_ALLSALES --------------------------------------------------------------------------------- 17/22 */
+
+
+/* COUNT_PRODUCT_SALES --------------------------------------------------------------------------------- 18/22 */
+
+
+
+/* DELETE_SALE --------------------------------------------------------------------------------- 19/22 */
+
+
+
+/* DELETE_ALL_SALES --------------------------------------------------------------------------------- 20/22 */
+
+
+
+/* DELETE_CUSTOMER --------------------------------------------------------------------------------- 21/22 */
+
+
+
+/* DELETE_PRODUCT --------------------------------------------------------------------------------- 22/22 */
