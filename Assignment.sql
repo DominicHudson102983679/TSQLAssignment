@@ -270,15 +270,56 @@ BEGIN
 
     BEGIN CATCH
         BEGIN
+
+            IF error_number() = 50060
+                THROW
+            ELSE IF error_number() = 50000
+                THROW
+
         END
     END CATCH;
 
 END;
 */
 
+
 /* UPD_CUST_SALESYTD --------------------------------------------------------------------------------- 6/22 */
 
+/*
+IF OBJECT_ID('UPD_CUST_SALESYTD') IS NOT NULL
+DROP PROCEDURE UPD_CUST_SALESYTD;
 
+go
+
+create procedure UPD_CUST_SALESYTD @pcustid int, @pamt int AS
+
+BEGIN
+
+    BEGIN TRY
+
+        IF @pamt < -999.99 OR @pamt > 999.99
+            THROW 50080, 'Amount out of range', 1
+
+        UPDATE customer
+            set  @pcustid = custID, @pamt = SALES_YTD
+
+    END TRY
+
+    BEGIN CATCH
+        BEGIN
+            IF ERROR_NUMBER() = 50020
+            THROW 
+        END
+    END CATCH;
+
+END;
+
+GO
+
+select *
+from customer
+
+*/
 
 /* GET_PROD_STRING --------------------------------------------------------------------------------- 7/22 */
 
@@ -340,3 +381,33 @@ END;
 
 
 /* DELETE_PRODUCT --------------------------------------------------------------------------------- 22/22 */
+
+
+/* quick tsql setup 
+
+IF OBJECT_ID('') IS NOT NULL
+DROP PROCEDURE _;
+
+go
+
+create procedure _ AS
+
+BEGIN
+
+    BEGIN TRY
+
+
+
+    END TRY
+
+    BEGIN CATCH
+        BEGIN
+
+        END
+    END CATCH;
+
+END;
+
+GO
+
+*/
