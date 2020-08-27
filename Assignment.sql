@@ -114,6 +114,7 @@ select * from customer
 
 /*
 
+
 IF OBJECT_ID('DELETE_ALL_CUSTOMERS') IS NOT NULL
 DROP PROCEDURE DELETE_ALL_CUSTOMERS;
 
@@ -141,6 +142,9 @@ BEGIN
 END;
 
 GO
+
+EXEC ADD_CUSTOMER @pcustID = 2, @pcustname = 'testdude3';
+EXEC ADD_CUSTOMER @pcustID = 3, @pcustname = 'testdude3';
 
 exec DELETE_ALL_CUSTOMERS;
 
