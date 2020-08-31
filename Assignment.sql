@@ -250,7 +250,7 @@ select * from product;
 
 */
 
-/* GET_CUSTOMER_STRING --------------------------------------------------------------------------------- 5/22 */
+/* GET_CUSTOMER_STRING --------------------------------------------------------------------------------- COMPLETED 5/22 */
 
 /*
 IF OBJECT_ID('GET_CUSTOMER_STRING') IS NOT NULL
@@ -258,34 +258,55 @@ DROP PROCEDURE GET_CUSTOMER_STRING;
 
 go
 
-create procedure GET_CUSTOMER_STRING @pcustid int, @preturnstring nvarchar(100) AS
+create procedure GET_CUSTOMER_STRING @pcustid int, @preturnstring nvarchar(100) OUTPUT AS
 
 BEGIN
 
     BEGIN TRY
 
+        DECLARE @custname NVARCHAR(100), @status NVARCHAR(7), @ytd money;
 
+        select @custname = CUSTNAME, @ytd = SALES_YTD, @status = [STATUS] 
+        from CUSTOMER 
+        where CUSTID = @pcustid
+
+        IF @@rowcount = 0
+            THROW 50060, 'Customer ID not found', 1
+
+        SET @preturnstring = CONCAT('CustID: ', @pcustID, ' Name: ', @custname, ' Status', @status, ' SalesYTD: ', @ytd);
 
     END TRY
 
     BEGIN CATCH
-        BEGIN
+    
+        IF ERROR_NUMBER() = 50060
+            THROW
+    
+        ELSE 
+            BEGIN
+                DECLARE @errormessage NVARCHAR(max) = error_message();
+                THROW 50000, @errormessage, 1
+            END;
 
-            IF error_number() = 50060
-                THROW
-            ELSE IF error_number() = 50000
-                THROW
+    END CATCH
 
-        END
-    END CATCH;
+END
 
-END;
+GO
+
+BEGIN
+
+    DECLARE @outputvalue NVARCHAR(100);
+    EXEc GET_CUSTOMER_STRING @pcustID = 1, @preturnstring = @outputvalue OUTPUT;
+    print (@outputvalue)
+
+END
+
 */
 
+/* UPD_CUST_SALESYTD --------------------------------------------------------------------------------- COMPLETED 6/22 */
 
-/* UPD_CUST_SALESYTD --------------------------------------------------------------------------------- 6/22 */
 
-/*
 IF OBJECT_ID('UPD_CUST_SALESYTD') IS NOT NULL
 DROP PROCEDURE UPD_CUST_SALESYTD;
 
@@ -297,29 +318,46 @@ BEGIN
 
     BEGIN TRY
 
+        DECLARE @ytd money;
+        SELECT @ytd = sales_ytd from CUSTOMER where custid = @pcustid;
+
         IF @pamt < -999.99 OR @pamt > 999.99
             THROW 50080, 'Amount out of range', 1
 
-        UPDATE customer
-            set  @pcustid = custID, @pamt = SALES_YTD
+        ELSE 
+            BEGIN
+                UPDATE customer
+                set SALES_YTD = @ytd + @pamt
+                WHERE CUSTID = @pcustid
+            END
 
     END TRY
 
     BEGIN CATCH
-        BEGIN
-            IF ERROR_NUMBER() = 50020
-            THROW 
-        END
+
+        if @@ROWCOUNT = 0
+            THROW 50070, 'Customer ID not found', 1
+
+        ELSE
+            BEGIN
+                DECLARE @errormessage NVARCHAR(max) = error_message();
+                THROW 50000, @errormessage, 1
+            END
+
     END CATCH;
 
 END;
 
 GO
+ 
+EXEC UPD_CUST_SALESYTD @pcustid = 2, @pamt = 700.00;
+EXEC UPD_CUST_SALESYTD @pcustid = 3, @pamt = 100.00;
+EXEC UPD_CUST_SALESYTD @pcustid = 1, @pamt = 50.00;
 
-select *
-from customer
+Select *
+From customer;
 
-*/
+
 
 /* GET_PROD_STRING --------------------------------------------------------------------------------- 7/22 */
 
