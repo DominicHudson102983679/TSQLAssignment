@@ -306,6 +306,7 @@ END
 
 /* UPD_CUST_SALESYTD --------------------------------------------------------------------------------- COMPLETED 6/22 */
 
+/*
 
 IF OBJECT_ID('UPD_CUST_SALESYTD') IS NOT NULL
 DROP PROCEDURE UPD_CUST_SALESYTD;
@@ -357,19 +358,171 @@ EXEC UPD_CUST_SALESYTD @pcustid = 1, @pamt = 50.00;
 Select *
 From customer;
 
+*/
 
 
-/* GET_PROD_STRING --------------------------------------------------------------------------------- 7/22 */
+/* GET_PROD_STRING --------------------------------------------------------------------------------- COMPLETED 7/22 */
+
+/*
+
+IF OBJECT_ID('GET_PROD_STRING') IS NOT NULL
+DROP PROCEDURE GET_PROD_STRING;
+
+go
+
+create procedure GET_PROD_STRING @pprodid int, @pReturnString nvarchar(1000) OUTPUT AS 
+
+BEGIN
+
+    BEGIN TRY
+
+        DECLARE @pprodname NVARCHAR(100),  @ytd money, @sellprice MONEY;
+
+        SELECT @pprodname = PRODNAME, @ytd = sales_ytd, @sellprice = selling_price
+        from PRODUCT
+        WHERE @pprodid = PRODID
+
+        IF @@ROWCOUNT = 0
+            THROW 50090, 'Product ID not found', 1
+        
+        SET @pReturnString = concat('Prodid: ', @pprodid, ' ','Name: ', @pprodname, ' ',  'Price: ' , @sellprice ,' ','SalesYTD: ',@ytd);
+
+    END TRY
+
+    BEGIN CATCH
+
+        IF ERROR_NUMBER() in (50090)
+            THROW
+        
+        ELSE
+            BEGIN
+                DECLARE @errormessage NVARCHAR(max) = error_message();
+                THROW 50000, @errormessage, 1 
+            END
+    END CATCH;
+
+END;
+
+GO
+
+GO
+BEGIN
+    DECLARE @externalParam NVARCHAR(100)
+    EXEC GET_PROD_STRING @pprodid = 1, @pReturnString = @externalParam OUTPUT
+    print @externalParam
+END 
+GO
+
+*/
+
+/* UPD_PROD_SALESYTD --------------------------------------------------------------------------------- COMPLETED 8/22 */
+
+/*
+
+IF OBJECT_ID('UPD_PROD_SALESYT') IS NOT NULL
+DROP PROCEDURE UPD_PROD_SALESYT;
+
+go
+
+create procedure UPD_PROD_SALESYT @pprodid int, @pamt money AS
+
+BEGIN
+
+    BEGIN TRY
+
+        if @pamt < -999.99 or @pamt > 999.99
+            THROW 50110, 'Amount out of range', 1
+        
+        UPDATE PRODUCT 
+        set SALES_YTD = @pamt
+        WHERE PRODID = @pprodid;
+
+    END TRY
+
+    BEGIN CATCH
+
+        BEGIN
+
+            if @@ROWCOUNT = 0
+            THROW 50070, 'Customer ID not found', 1
+
+        ELSE
+            BEGIN
+                DECLARE @errormessage NVARCHAR(max) = error_message();
+                THROW 50000, @errormessage, 1
+            END
+        END
+
+    END CATCH;
+
+END;
+
+GO
+
+insert into product values
+(2, 'beef', 30, 320),
+(3, 'tuna', 40, 210),
+(4, 'teef', 50, 500)
+
+go
 
 
+exec UPD_PROD_SALESYT @pprodid = 1, @pamt = 696
+exec UPD_PROD_SALESYT @pprodid = 4, @pamt = 727
 
-/* UPD_PROD_SALESYTD --------------------------------------------------------------------------------- 8/22 */
+select *
+from product
 
+GO
 
+*/
 
-/* UPD_CUSTOMER_STATUS --------------------------------------------------------------------------------- 9/22 */
+/* UPD_CUSTOMER_STATUS --------------------------------------------------------------------------------- COMPLETED 9/22 */
 
+/*
 
+IF OBJECT_ID('UPD_CUSTOMER_STATUS') IS NOT NULL
+DROP PROCEDURE UPD_CUSTOMER_STATUS;
+
+go
+
+create procedure UPD_CUSTOMER_STATUS @pcustid int, @pstatus nvarchar(10) AS
+
+BEGIN
+
+    BEGIN TRY
+
+        if @pstatus != 'ok' AND @pstatus != 'suspend'
+            THROW 50130, 'Invalid Status value', 1
+
+        UPDATE CUSTOMER
+        SET [STATUS] = @pstatus
+        WHERE CUSTID = @pcustid;
+
+        IF @@ROWCOUNT = 0
+                THROW 50120, 'CustomerID not found', 1 
+
+    END TRY
+
+    BEGIN CATCH
+        BEGIN
+
+            DECLARE @ERRORMESSAGE NVARCHAR(MAX) = ERROR_MESSAGE();
+            THROW 50000, @ERRORMESSAGE, 1
+                
+        END
+    END CATCH;
+
+END;
+
+GO
+
+exec UPD_CUSTOMER_STATUS @pcustid = 2, @pstatus = 'suspend';
+
+select *
+from customer
+
+*/
 
 /* ADD_SIMPLE_SALE --------------------------------------------------------------------------------- 10/22 */
 
