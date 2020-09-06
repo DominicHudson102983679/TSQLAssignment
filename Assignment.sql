@@ -479,7 +479,7 @@ GO
 
 /* UPD_CUSTOMER_STATUS --------------------------------------------------------------------------------- COMPLETED 9/22 */
 
-/*
+
 
 IF OBJECT_ID('UPD_CUSTOMER_STATUS') IS NOT NULL
 DROP PROCEDURE UPD_CUSTOMER_STATUS;
@@ -522,7 +522,7 @@ exec UPD_CUSTOMER_STATUS @pcustid = 2, @pstatus = 'suspend';
 select *
 from customer
 
-*/
+
 
 /* ADD_SIMPLE_SALE --------------------------------------------------------------------------------- 10/22 */
 
