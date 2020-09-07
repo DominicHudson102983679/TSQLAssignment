@@ -1,5 +1,13 @@
 use assignment
 
+/* to do
+10/22
+add sys_refcursor to GET_ALL_CUSTOMERS 13/22
+add sys_refcursor to GET_ALL_PRODUCTS 14/22
+finish 15/22
+
+*/
+
 /*
 IF OBJECT_ID('Sale') IS NOT NULL
 DROP TABLE SALE;
@@ -61,7 +69,7 @@ GO
 
 */
 
-/* ADD_CUSTOMER ----------------------------------------------------------------------------- 1/22 COMPLETED */
+/* ADD_CUSTOMER ------------------------------------------------------------------ 1/22 COMPLETED */
 
 
 /*
@@ -110,7 +118,7 @@ select * from customer
 */
 
 
-/* DELETE_ALL_CUSTOMERS --------------------------------------------------------------------------------- 2/22 COMPLETED */
+/* DELETE_ALL_CUSTOMERS --------------------------------------------------------------- 2/22 COMPLETED */
 
 /*
 
@@ -154,7 +162,7 @@ select * from customer;
 
 */
 
-/* ADD_PRODUCT --------------------------------------------------------------------------------- 3/22 COMPLETED */
+/* ADD_PRODUCT ---------------------------------------------------------------- 3/22 COMPLETED */
 
 /*
 IF OBJECT_ID('ADD_PRODUCT') IS NOT NULL
@@ -207,7 +215,7 @@ Select *
 From Product;
 */
 
-/* DELETE_ALL_PRODUCTS --------------------------------------------------------------------------------- 4/22 COMPLETED */
+/* DELETE_ALL_PRODUCTS ----------------------------------------------------------------- 4/22 COMPLETED */
 
 /*
 
@@ -250,7 +258,7 @@ select * from product;
 
 */
 
-/* GET_CUSTOMER_STRING --------------------------------------------------------------------------------- COMPLETED 5/22 */
+/* GET_CUSTOMER_STRING -------------------------------------------------------------------- COMPLETED 5/22 */
 
 /*
 IF OBJECT_ID('GET_CUSTOMER_STRING') IS NOT NULL
@@ -304,7 +312,7 @@ END
 
 */
 
-/* UPD_CUST_SALESYTD --------------------------------------------------------------------------------- COMPLETED 6/22 */
+/* UPD_CUST_SALESYTD ---------------------------------------------------------------------- COMPLETED 6/22 */
 
 /*
 
@@ -361,7 +369,7 @@ From customer;
 */
 
 
-/* GET_PROD_STRING --------------------------------------------------------------------------------- COMPLETED 7/22 */
+/* GET_PROD_STRING ----------------------------------------------------------------- COMPLETED 7/22 */
 
 /*
 
@@ -415,7 +423,7 @@ GO
 
 */
 
-/* UPD_PROD_SALESYTD --------------------------------------------------------------------------------- COMPLETED 8/22 */
+/* UPD_PROD_SALESYTD ---------------------------------------------------------------------- COMPLETED 8/22 */
 
 /*
 
@@ -477,9 +485,9 @@ GO
 
 */
 
-/* UPD_CUSTOMER_STATUS --------------------------------------------------------------------------------- COMPLETED 9/22 */
+/* UPD_CUSTOMER_STATUS ---------------------------------------------------------------- COMPLETED 9/22 */
 
-
+/*
 
 IF OBJECT_ID('UPD_CUSTOMER_STATUS') IS NOT NULL
 DROP PROCEDURE UPD_CUSTOMER_STATUS;
@@ -522,56 +530,254 @@ exec UPD_CUSTOMER_STATUS @pcustid = 2, @pstatus = 'suspend';
 select *
 from customer
 
+*/
 
-
-/* ADD_SIMPLE_SALE --------------------------------------------------------------------------------- 10/22 */
-
-
-
-/* SUM_CUSTOMER_SALESYTD --------------------------------------------------------------------------------- 11/22 */
+/* ADD_SIMPLE_SALE --------------------------------------------------------------------- 10/22 */
 
 
 
-/* SUM_PRODUCT_SALESYTD --------------------------------------------------------------------------------- 12/22 */
+/* SUM_CUSTOMER_SALESYTD -------------------------------------------------------------- COMPLETED 11/22 */
+
+/*
+
+IF OBJECT_ID('SUM_CUSTOMER_SALESYTD') IS NOT NULL
+DROP PROCEDURE SUM_CUSTOMER_SALESYTD;
+
+go
+
+create procedure SUM_CUSTOMER_SALESYTD AS
+
+BEGIN
+
+    BEGIN TRY
+
+        return (select sum(sales_YTD) from customer)
+
+    END TRY
+
+    BEGIN CATCH
+
+        BEGIN
+            declare @errormessage nvarchar(max) = error_message();
+            throw 50000, @errormessage, 1
+        END;
+
+    END CATCH;
+
+END;
+
+GO
+
+insert into customer values
+(5, 'Freddy', 1000, 'ok');
+
+GO
+
+-- works: the extra 1000 from Freddy is added to the return total
+declare @Cust_SalesYTD_Sum INT
+exec @Cust_SalesYTD_Sum = SUM_CUSTOMER_SALESYTD;
+print @Cust_SalesYTd_Sum
+
+go
+
+*/
+
+/* SUM_PRODUCT_SALESYTD --------------------------------------------------------------- COMPLETED 12/22 */
+
+/*
+
+IF OBJECT_ID('SUM_PRODUCT_SALESYTD') IS NOT NULL
+DROP PROCEDURE SUM_PRODUCT_SALESYTD;
+
+go
+
+create procedure SUM_PRODUCT_SALESYTD AS
+
+BEGIN
+
+    BEGIN TRY
+
+        return (select sum(sales_ytd) from product)
+
+    END TRY
+
+    BEGIN CATCH
+        BEGIN
+            declare @errormessage nvarchar(max) = error_message();
+            throw 50000, @errormessage, 1
+        END
+    END CATCH;
+
+END;
+
+
+GO
+
+-- insert into product values
+-- (5, 'super beef', 30, 1000);
+
+go
+
+-- first try: 1953 (adding a product with 1000 sales_ytd next)
+-- second try: 2953, works
+declare @prod_SalesYTD_Sum INT
+exec @prod_SalesYTD_Sum = SUM_product_SALESYTD;
+print @prod_SalesYTd_Sum
+
+*/
+
+/* GET_ALL_CUSTOMERS ----------------------------------------------------------------------- COMPLETED 13/22 */
+
+/*
+
+IF OBJECT_ID('GET_ALL_CUSTOMERS') IS NOT NULL
+DROP PROCEDURE GET_ALL_CUSTOMERS;
+
+go
+
+create procedure GET_ALL_CUSTOMERS @poutcur CURSOR varying output AS
+
+BEGIN
+    set @poutcur = cursor for
+    select * from customer;
+    open @poutcur;
+END;
+
+go
+
+BEGIN
+declare @outcustcur as cursor;
+declare @custname nvarchar(100), @custytd money, @custstatus NVARCHAR(10), @custid INT
+
+exec GET_ALL_CUSTOMERS @poutcur = @outcustcur output;
+
+fetch next from @outcustcur into @custid, @custname, @custytd, @custstatus;
+while @@FETCH_STATUS = 0
+
+BEGIN
+    BEGIN TRY
+        print concat('ID: ', @custid, ', Name: ', @custname, ', YTD: ', @custytd, ', Status: ', @custstatus)
+        fetch next from @outcustcur into @custid, @custname, @custytd, @custstatus;
+    END TRY
+    BEGIN CATCH
+        BEGIN
+            declare @errormessage nvarchar(max) = error_message();
+            throw 50000, @errormessage, 1
+        END
+    END CATCH
+END
+
+close @outcustcur;
+DEALLOCATE @outcustcur;
+
+end
+
+*/
+
+/* GET_ALL_PRODUCTS ---------------------------------------------------------------- COMPLETED 14/22 */
+
+/*
+
+IF OBJECT_ID('GET_ALL_PRODUCTS') IS NOT NULL
+DROP PROCEDURE GET_ALL_PRODUCTS;
+
+go
+
+create procedure GET_ALL_PRODUCTS @poutcur CURSOR varying output AS
+
+BEGIN
+    set @poutcur = cursor for
+    select * from product;
+    open @poutcur;
+END;
+
+go
+
+BEGIN
+declare @outprodcur as cursor;
+declare @prodid INT, @prodname nvarchar(100), @prodprice money, @prodytd money; 
+
+exec GET_ALL_PRODUCTS @poutcur = @outprodcur output;
+
+fetch next from @outprodcur into @prodid, @prodname, @prodprice, @prodytd;
+while @@FETCH_STATUS = 0
+
+BEGIN
+    BEGIN TRY
+        print concat('ID: ', @prodid, ', Name: ', @prodname, ', Price: ', @prodprice, ', YTD: ', @prodytd)
+        fetch next from @outprodcur into @prodid, @prodname, @prodprice, @prodytd;
+    END TRY
+    BEGIN CATCH
+        BEGIN
+            declare @errormessage nvarchar(max) = error_message();
+            throw 50000, @errormessage, 1
+        END
+    END CATCH
+END
+
+close @outprodcur;
+DEALLOCATE @outprodcur;
+
+end
+
+*/
+
+/* ADD_LOCATION -------------------------------------------------------------------- 15/22 */
+
+IF OBJECT_ID('ADD_LOCATION') IS NOT NULL
+DROP PROCEDURE ADD_LOCATION;
+
+go
+
+create procedure ADD_LOCATION @ploccode nvarchar(5), @pminqty int, @pmaxqty int AS
+
+BEGIN
+
+    BEGIN TRY
+
+        insert into [LOCATION] (locid, minqty, maxqty) VALUES
+        (@ploccode, @pminqty, @pmaxqty);
+
+    END TRY
+
+    BEGIN CATCH
+        BEGIN
+            if ERROR_NUMBER() = 2627
+                throw
+
+            declare @errormessage nvarchar(max) = error_message();
+            throw 50000, @errormessage, 1
+        END
+    END CATCH;
+
+END;
+
+GO
+
+/* ADD_COMPLEX_SALE ------------------------------------------------------------------- 16/22 */
 
 
 
-/* GET_ALL_CUSTOMERS --------------------------------------------------------------------------------- 13/22 */
+/* GET_ALLSALES ---------------------------------------------------------------- 17/22 */
+
+
+/* COUNT_PRODUCT_SALES ----------------------------------------------------------- 18/22 */
 
 
 
-/* GET_ALL_PRODUCTS --------------------------------------------------------------------------------- 14/22 */
+/* DELETE_SALE ------------------------------------------------------------------- 19/22 */
 
 
 
-/* ADD_LOCATION --------------------------------------------------------------------------------- 15/22 */
+/* DELETE_ALL_SALES ------------------------------------------------------------------ 20/22 */
 
 
 
-/* ADD_COMPLEX_SALE --------------------------------------------------------------------------------- 16/22 */
+/* DELETE_CUSTOMER ------------------------------------------------------------------ 21/22 */
 
 
 
-/* GET_ALLSALES --------------------------------------------------------------------------------- 17/22 */
-
-
-/* COUNT_PRODUCT_SALES --------------------------------------------------------------------------------- 18/22 */
-
-
-
-/* DELETE_SALE --------------------------------------------------------------------------------- 19/22 */
-
-
-
-/* DELETE_ALL_SALES --------------------------------------------------------------------------------- 20/22 */
-
-
-
-/* DELETE_CUSTOMER --------------------------------------------------------------------------------- 21/22 */
-
-
-
-/* DELETE_PRODUCT --------------------------------------------------------------------------------- 22/22 */
+/* DELETE_PRODUCT ------------------------------------------------------------------ 22/22 */
 
 
 /* quick tsql setup 
@@ -593,7 +799,8 @@ BEGIN
 
     BEGIN CATCH
         BEGIN
-
+            declare @errormessage nvarchar(max) = error_message();
+            throw 50000, @errormessage, 1
         END
     END CATCH;
 
