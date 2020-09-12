@@ -1,10 +1,8 @@
 use assignment
 
 /* to do
-10/22
-add sys_refcursor to GET_ALL_CUSTOMERS 13/22
-add sys_refcursor to GET_ALL_PRODUCTS 14/22
 finish 15/22
+18/22 not sure if working
 
 */
 
@@ -427,12 +425,12 @@ GO
 
 /*
 
-IF OBJECT_ID('UPD_PROD_SALESYT') IS NOT NULL
-DROP PROCEDURE UPD_PROD_SALESYT;
+IF OBJECT_ID('UPD_PROD_SALESYTD') IS NOT NULL
+DROP PROCEDURE UPD_PROD_SALESYTD;
 
 go
 
-create procedure UPD_PROD_SALESYT @pprodid int, @pamt money AS
+create procedure UPD_PROD_SALESYTD @pprodid int, @pamt money AS
 
 BEGIN
 
@@ -467,16 +465,9 @@ END;
 
 GO
 
-insert into product values
-(2, 'beef', 30, 320),
-(3, 'tuna', 40, 210),
-(4, 'teef', 50, 500)
 
-go
-
-
-exec UPD_PROD_SALESYT @pprodid = 1, @pamt = 696
-exec UPD_PROD_SALESYT @pprodid = 4, @pamt = 727
+exec UPD_PROD_SALESYTD @pprodid = 1, @pamt = 696
+exec UPD_PROD_SALESYTD @pprodid = 4, @pamt = 727
 
 select *
 from product
@@ -484,6 +475,7 @@ from product
 GO
 
 */
+
 
 /* UPD_CUSTOMER_STATUS ---------------------------------------------------------------- COMPLETED 9/22 */
 
@@ -532,9 +524,71 @@ from customer
 
 */
 
-/* ADD_SIMPLE_SALE --------------------------------------------------------------------- 10/22 */
+/* ADD_SIMPLE_SALE --------------------------------------------------------------------- COMPLETED 10/22 */
 
+/*
 
+IF OBJECT_ID('ADD_SIMPLE_SALE') IS NOT NULL
+DROP PROCEDURE ADD_SIMPLE_SALE;
+
+go
+
+create procedure ADD_SIMPLE_SALE @pcustid int, @pprodid int, @pqty int AS
+
+BEGIN
+
+    BEGIN TRY
+
+        declare @sum int, @custstatus NVARCHAR(10), @pstatus nvarchar(100), @price money, 
+        @userid int, @userprodid int, @converteddate date;
+
+        select @custstatus = [status] from customer where custid = @pcustid
+        select @userid = custid from customer where custid = @pcustid
+        select @price = selling_price from product where prodid = @pprodid
+        select @userprodid = prodid from product where prodid = @pprodid;
+  
+        if @pqty < 1 or @pqty > 999
+            THROW 50140, 'sale quantity outside valid range', 1
+        if @pstatus != 'ok'
+            throw 50150, 'customer status is not ok', 1
+        if @userid is NULL
+            throw 50160, 'customer id not found', 1
+        if @userprodid is NULL
+            throw 50170, 'product id not found', 1
+
+        set @sum = @pqty * @price
+
+        exec UPD_CUST_SALESYTD @pcustid = @pcustid, @pamt = @sum;
+        exec UPD_PROD_SALESYTD @pprodid = @pprodid, @pamt = @sum;
+        if @pprodid is NULL
+            throw 50170, 'customer status is not ok', 1
+
+    END TRY
+
+    BEGIN CATCH
+        BEGIN
+            declare @errormessage nvarchar(max) = error_message();
+            throw 50000, @errormessage, 1
+        END;
+    END CATCH;
+
+END;
+
+GO
+
+BEGIN
+EXEC ADD_SIMPLE_SALE @pcustid = 1, @pprodid = 2, @pqty = 30;
+end
+
+go
+
+select *
+from CUSTOMER
+
+select *
+from product
+
+*/
 
 /* SUM_CUSTOMER_SALESYTD -------------------------------------------------------------- COMPLETED 11/22 */
 
@@ -724,6 +778,7 @@ end
 
 /* ADD_LOCATION -------------------------------------------------------------------- 15/22 */
 
+/*
 IF OBJECT_ID('ADD_LOCATION') IS NOT NULL
 DROP PROCEDURE ADD_LOCATION;
 
@@ -737,6 +792,8 @@ BEGIN
 
         insert into [LOCATION] (locid, minqty, maxqty) VALUES
         (@ploccode, @pminqty, @pmaxqty);
+
+        if 
 
     END TRY
 
@@ -754,20 +811,200 @@ END;
 
 GO
 
-/* ADD_COMPLEX_SALE ------------------------------------------------------------------- 16/22 */
+
+delete from [LOCATION]
+insert into [LOCATION] (locid, minqty, maxqty)
+VALUES ('loc69', 10, 100),
+('loc69', 10, 100)
+
+go
+
+select *
+from LOCATION
+*/
+
+/* ADD_COMPLEX_SALE ------------------------------------------------------------------- COMPLETED 16/22 */
+
+/*
+IF OBJECT_ID('ADD_COMPLEX_SALE') IS NOT NULL
+DROP PROCEDURE ADD_COMPLEX_SALE;
+
+go
+
+create procedure ADD_COMPLEX_SALE @pcustid int, @pprodid int, @pqty int, @pdate nvarchar(8) AS
+
+BEGIN
+
+    BEGIN TRY
+
+        declare @sum int, @custstatus NVARCHAR(10), @price money, @userid int, 
+        @userprodid int, @converteddate date;
+
+        select @custstatus = [status] from customer where custid = @pcustid
+        select @userid = custid from customer where custid = @pcustid
+        select @price = selling_price from product where prodid = @pprodid
+        select @userprodid = prodid from product where prodid = @pprodid;
+        select @converteddate = convert(nvarchar, @pdate)
+        
+        if @pqty < 1 or @pqty > 999
+            throw 50230, 'sale quantity outside valid range', 1
+        if @custstatus != 'ok'
+            throw 50240, 'customer status is not ok', 1
+        if (select count(*) from customer where custid = @pcustid) = 0
+            throw 50260, 'customer id not found', 1
+        if (select count(*) from product where prodid = @pprodid) = 0
+            throw 50270, 'product id not found', 1
+
+        declare @seq bigINT
+        set @seq = next value for SALE_SEQ
+        set @sum = @pqty * @price
+
+        exec UPD_CUST_SALESYTD @pcustid = @pcustid, @pamt = @sum;
+
+        -- saleid comes out negative, not sure if supposed to
+
+        insert into sale (saleid, custid, prodid, qty, price, saledate)
+        values (@seq, @pcustid, @pprodid, @pqty, @price, @converteddate)
+
+    END TRY
+
+    BEGIN CATCH
+        BEGIN
+            declare @errormessage nvarchar(max) = error_message();
+            throw 50000, @errormessage, 1
+        END
+    END CATCH;
+
+END;
+
+GO
+
+exec ADD_COMPLEX_SALE @pcustid = 1, @pprodid = 3, @pqty = 10, @pdate = 20200505;
+
+select * from SALE;
+select * from product;
+
+*/
 
 
+/* GET_ALLSALES ---------------------------------------------------------------- COMPLETED 17/22 */
 
-/* GET_ALLSALES ---------------------------------------------------------------- 17/22 */
+/*
 
+IF OBJECT_ID('GET_ALLSALES') IS NOT NULL
+DROP PROCEDURE GET_ALLSALES;
+
+go
+
+create procedure GET_ALLSALES @poutcur cursor varying output AS
+
+BEGIN
+    set @poutcur = cursor for
+    select * from sale
+    open @poutcur;
+END
+
+BEGIN
+
+    BEGIN TRY
+
+        declare @oSales as cursor;
+        declare @oSaleid bigint, @oCustid int, @oProdid int, @oQty int, @oPrice money, @oSalesDate DATE
+
+        exec get_allsales @poutcur = @oSales output;
+
+        fetch next from @oSales into @oSaleid, @oCustID, @oProdid, @oQty, @oPrice, @oSalesDate;
+
+        begin 
+            print concat('sale id: ', @oSaleid, ', customer: ', @ocustid, ' product: ', @oprodid, ', quantity: ', @oqty, ', price: ', @oprice, ', sale date: ', @osalesdate)
+            fetch next from @osales into @osaleid, @ocustid, @oprodid, @oqty, @oprice, @oSalesDate;
+        END
+
+        close @osales;
+        DEALLOCATE @osales;
+
+    END TRY
+
+    BEGIN CATCH
+        BEGIN
+            declare @errormessage nvarchar(max) = error_message();
+            throw 50000, @errormessage, 1
+        END;
+    END CATCH
+
+END;
+
+GO
+
+*/
 
 /* COUNT_PRODUCT_SALES ----------------------------------------------------------- 18/22 */
 
+/*
+IF OBJECT_ID('COUNT_PRODUCT_SALES') IS NOT NULL
+DROP PROCEDURE COUNT_PRODUCT_SALES;
 
+go
+
+create procedure COUNT_PRODUCT_SALES @pdays int AS
+
+BEGIN
+
+    BEGIN TRY
+
+        declare @nndate DATE
+        set @nndate = dateadd(DD, @pdays, SYSDATETIME());
+
+        return (select count(*)
+        from SALE where SALEDATE >= @nndate);
+
+    END TRY
+
+    BEGIN CATCH
+        BEGIN
+            declare @errormessage nvarchar(max) = error_message();
+            throw 50000, @errormessage, 1
+        END
+    END CATCH;
+
+END;
+
+GO
+
+declare @salescount INT
+exec @salescount = COUNT_PRODUCT_SALES @pdays = -10
+print concat()
+*/
 
 /* DELETE_SALE ------------------------------------------------------------------- 19/22 */
 
+/*
+IF OBJECT_ID('') IS NOT NULL
+DROP PROCEDURE _;
 
+go
+
+create procedure _ AS
+
+BEGIN
+
+    BEGIN TRY
+
+
+
+    END TRY
+
+    BEGIN CATCH
+        BEGIN
+            declare @errormessage nvarchar(max) = error_message();
+            throw 50000, @errormessage, 1
+        END
+    END CATCH;
+
+END;
+
+GO
+*/
 
 /* DELETE_ALL_SALES ------------------------------------------------------------------ 20/22 */
 
