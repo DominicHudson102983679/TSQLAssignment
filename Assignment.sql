@@ -3,6 +3,8 @@ use assignment
 /* to do
 finish 15/22
 18/22 not sure if working
+21/22 still need: 50320. Product cannot be deleted as sales exist
+22/22 still need: 50320. Product cannot be deleted as sales exist
 
 */
 
@@ -1006,16 +1008,127 @@ END;
 GO
 */
 
-/* DELETE_ALL_SALES ------------------------------------------------------------------ 20/22 */
+/* DELETE_ALL_SALES ------------------------------------------------------------------ COMPLETED 20/22 */
+
+/*
+
+IF OBJECT_ID('DELETE_ALL_SALES') IS NOT NULL
+DROP PROCEDURE DELETE_ALL_SALES;
+
+go
+
+create procedure DELETE_ALL_SALES AS
+
+BEGIN
+
+    BEGIN TRY
+
+        DELETE from sale;
+        update CUSTOMER set sales_ytd = 0;
+        update product set sales_ytd = 0;
 
 
+    END TRY
 
-/* DELETE_CUSTOMER ------------------------------------------------------------------ 21/22 */
+    BEGIN CATCH
+        BEGIN
+            declare @errormessage nvarchar(max) = error_message();
+            throw 50000, @errormessage, 1
+        END
+    END CATCH;
 
+END;
 
+GO
+
+exec DELETE_ALL_SALES
+
+go
+
+select * from PRODUCT
+select * from customer
+select * from sale
+
+*/
+
+/* DELETE_CUSTOMER ------------------------------------------------------------------ COMPLETED 21/22 */
+
+/*
+
+IF OBJECT_ID('DELETE_CUSTOMER') IS NOT NULL
+DROP PROCEDURE DELETE_CUSTOMER;
+
+go
+
+create procedure DELETE_CUSTOMER @pcustid int AS
+
+BEGIN
+
+    BEGIN TRY
+
+        delete from customer where @pcustid = custid
+        if @@rowcount = 0
+            THROW 50290, 'customer id not found', 1
+
+    END TRY
+
+-- still need to add THROW 50300, 'Customer cannot be deleted as sales exist', 1
+
+    BEGIN CATCH
+        BEGIN
+            declare @errormessage nvarchar(max) = error_message();
+            throw 50000, @errormessage, 1
+        END
+    END CATCH;
+
+END;
+
+GO
+
+EXEC DELETE_CUSTOMER @pcustid = 2
+
+select * from CUSTOMER
+
+*/
 
 /* DELETE_PRODUCT ------------------------------------------------------------------ 22/22 */
 
+
+
+IF OBJECT_ID('DELETE_PRODUCT') IS NOT NULL
+DROP PROCEDURE DELETE_PRODUCT;
+
+go
+
+create procedure DELETE_PRODUCT @pprodid int AS
+
+BEGIN
+
+    BEGIN TRY
+
+        delete from product where prodid = @pprodid
+        if @@rowcount = 0
+            THROW 50310, 'product id not found', 1
+
+    END TRY
+
+    BEGIN CATCH
+        BEGIN
+            declare @errormessage nvarchar(max) = error_message();
+            throw 50000, @errormessage, 1
+        END
+    END CATCH;
+
+END;
+
+GO
+
+exec DELETE_PRODUCT @pprodid = 1
+
+
+
+select *
+from product
 
 /* quick tsql setup 
 
