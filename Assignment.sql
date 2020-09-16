@@ -8,7 +8,7 @@ finish 15/22
 
 */
 
-/*
+
 IF OBJECT_ID('Sale') IS NOT NULL
 DROP TABLE SALE;
 IF OBJECT_ID('Product') IS NOT NULL
@@ -59,15 +59,13 @@ CREATE TABLE LOCATION (
 , CONSTRAINT CHECK_MAXQTY_GREATER_MIXQTY CHECK (MAXQTY >= MINQTY)
 );
 
-
-
 IF OBJECT_ID('SALE_SEQ') IS NOT NULL
 DROP SEQUENCE SALE_SEQ;
 CREATE SEQUENCE SALE_SEQ;
 
 GO
 
-*/
+
 
 /* ADD_CUSTOMER ------------------------------------------------------------------ 1/22 COMPLETED */
 
@@ -116,6 +114,9 @@ EXEC ADD_CUSTOMER @pcustID = 3, @pcustname = 'testdude3';
 
 select * from customer
 */
+
+select *
+from customer
 
 
 /* DELETE_ALL_CUSTOMERS --------------------------------------------------------------- 2/22 COMPLETED */
@@ -795,7 +796,6 @@ BEGIN
         insert into [LOCATION] (locid, minqty, maxqty) VALUES
         (@ploccode, @pminqty, @pmaxqty);
 
-        if 
 
     END TRY
 
@@ -818,12 +818,9 @@ delete from [LOCATION]
 insert into [LOCATION] (locid, minqty, maxqty)
 VALUES ('loc69', 10, 100),
 ('loc69', 10, 100)
-
-go
-
-select *
-from LOCATION
 */
+
+
 
 /* ADD_COMPLEX_SALE ------------------------------------------------------------------- COMPLETED 16/22 */
 
@@ -1093,7 +1090,7 @@ select * from CUSTOMER
 
 /* DELETE_PRODUCT ------------------------------------------------------------------ 22/22 */
 
-
+/*
 
 IF OBJECT_ID('DELETE_PRODUCT') IS NOT NULL
 DROP PROCEDURE DELETE_PRODUCT;
