@@ -1,9 +1,8 @@
 use assignment
 
 /* to do
-finish 15/22
-18/22 not sure if working
-21/22 still need: 50320. Product cannot be deleted as sales exist
+19/22
+
 22/22 still need: 50320. Product cannot be deleted as sales exist
 
 */
@@ -67,10 +66,8 @@ GO
 
 
 
-/* ADD_CUSTOMER ------------------------------------------------------------------ 1/22 COMPLETED */
+/* ADD_CUSTOMER ------------------------------- 1/22 COMPLETED */
 
-
-/*
 IF OBJECT_ID('ADD_CUSTOMER') IS NOT NULL
 DROP PROCEDURE ADD_CUSTOMER;
 
@@ -104,25 +101,15 @@ END;
 
 GO 
 
-DELETE from customer;
+delete from CUSTOMER
 
-GO
+go
 
-
-EXEC ADD_CUSTOMER @pcustID = 2, @pcustname = 'testdude3';
-EXEC ADD_CUSTOMER @pcustID = 3, @pcustname = 'testdude3';
-
-select * from customer
-*/
-
-select *
-from customer
+EXEC ADD_CUSTOMER @pcustID = 1, @pcustname = 'Tom Cruise';
+EXEC ADD_CUSTOMER @pcustID = 2, @pcustname = 'Leonardo DiCaprio';
 
 
-/* DELETE_ALL_CUSTOMERS --------------------------------------------------------------- 2/22 COMPLETED */
-
-/*
-
+/* DELETE_ALL_CUSTOMERS -------------------------- 2/22 COMPLETED */
 
 IF OBJECT_ID('DELETE_ALL_CUSTOMERS') IS NOT NULL
 DROP PROCEDURE DELETE_ALL_CUSTOMERS;
@@ -150,22 +137,27 @@ BEGIN
     END CATCH;
 END;
 
-GO
+go
 
-EXEC ADD_CUSTOMER @pcustID = 2, @pcustname = 'testdude3';
-EXEC ADD_CUSTOMER @pcustID = 3, @pcustname = 'testdude3';
+exec DELETE_ALL_CUSTOMERS
 
-exec DELETE_ALL_CUSTOMERS;
+go
 
-GO
+EXEC ADD_CUSTOMER @pcustID = 1, @pcustname = 'Tom Cruise';
+EXEC ADD_CUSTOMER @pcustID = 2, @pcustname = 'Leonardo DiCaprio';
+EXEC ADD_CUSTOMER @pcustID = 3, @pcustname = 'Bradley Cooper';
+EXEC ADD_CUSTOMER @pcustID = 4, @pcustname = 'Amy Adams';
+EXEC ADD_CUSTOMER @pcustID = 5, @pcustname = 'Natalie Portman';
+EXEC ADD_CUSTOMER @pcustID = 6, @pcustname = 'Emilia Clarke';
+EXEC ADD_CUSTOMER @pcustID = 7, @pcustname = 'Matt Damon';
+EXEC ADD_CUSTOMER @pcustID = 8, @pcustname = 'Margot Robbie';
+EXEC ADD_CUSTOMER @pcustID = 9, @pcustname = 'Will Smith';
+EXEC ADD_CUSTOMER @pcustID = 10, @pcustname = 'Antony Starr';
+EXEC ADD_CUSTOMER @pcustID = 11, @pcustname = 'Brad Pitt';
 
-select * from customer;
+/* ADD_PRODUCT ---------------------------- 3/22 COMPLETED */
 
-*/
 
-/* ADD_PRODUCT ---------------------------------------------------------------- 3/22 COMPLETED */
-
-/*
 IF OBJECT_ID('ADD_PRODUCT') IS NOT NULL
 DROP PROCEDURE ADD_PRODUCT;
 
@@ -208,17 +200,15 @@ END;
 
 GO
 
+delete from PRODUCT;
 
-added to ADD_PRODUCT successfully 
-EXEC ADD_PRODUCT @pprodid = 1001, @pprodname = 'chicken', @pprice = 50.00;
+go
 
-Select *
-From Product;
-*/
+EXEC ADD_PRODUCT @pprodid = 1001, @pprodname = 'chicken', @pprice = 5.00;
+EXEC ADD_PRODUCT @pprodid = 1002, @pprodname = 'snapper', @pprice = 25.00;
 
-/* DELETE_ALL_PRODUCTS ----------------------------------------------------------------- 4/22 COMPLETED */
 
-/*
+/* DELETE_ALL_PRODUCTS ----------------------------- 4/22 COMPLETED */
 
 IF OBJECT_ID('DELETE_ALL_PRODUCTS') IS NOT NULL
 DROP PROCEDURE DELETE_ALL_PRODUCTS;
@@ -249,19 +239,23 @@ END
 
 go
 
-exec add_product @pprodid = 1002, @pprodname = 'chicken', @pprice = 50.00;
-exec add_product @pprodid = 1003, @pprodname = 'chicken', @pprice = 50.00;
-exec add_product @pprodid = 1004, @pprodname = 'chicken', @pprice = 50.00;
+exec DELETE_ALL_PRODUCTS
 
-exec DELETE_ALL_PRODUCTS;
+go
 
-select * from product;
+EXEC ADD_PRODUCT @pprodid = 1001, @pprodname = 'Chicken', @pprice = 5.00;
+EXEC ADD_PRODUCT @pprodid = 1002, @pprodname = 'Snapper', @pprice = 25.00;
+EXEC ADD_PRODUCT @pprodid = 1003, @pprodname = 'Steak', @pprice = 40.00;
+EXEC ADD_PRODUCT @pprodid = 1004, @pprodname = 'Tuna', @pprice = 60.00;
+EXEC ADD_PRODUCT @pprodid = 1005, @pprodname = 'Salmon', @pprice = 20.00;
+EXEC ADD_PRODUCT @pprodid = 1006, @pprodname = 'Mussels', @pprice = 10.00;
+EXEC ADD_PRODUCT @pprodid = 1007, @pprodname = 'Pork', @pprice = 10.00;
+EXEC ADD_PRODUCT @pprodid = 1008, @pprodname = 'Beef', @pprice = 15.00;
+EXEC ADD_PRODUCT @pprodid = 1009, @pprodname = 'Bacon', @pprice = 2.00;
 
-*/
 
-/* GET_CUSTOMER_STRING -------------------------------------------------------------------- COMPLETED 5/22 */
+/* GET_CUSTOMER_STRING ---------------------------------- COMPLETED 5/22 */
 
-/*
 IF OBJECT_ID('GET_CUSTOMER_STRING') IS NOT NULL
 DROP PROCEDURE GET_CUSTOMER_STRING;
 
@@ -280,9 +274,9 @@ BEGIN
         where CUSTID = @pcustid
 
         IF @@rowcount = 0
-            THROW 50060, 'Customer ID not found', 1
+            THROW 50060, 'GET_CUSTOMER_STRING Customer ID not found', 1
 
-        SET @preturnstring = CONCAT('CustID: ', @pcustID, ' Name: ', @custname, ' Status', @status, ' SalesYTD: ', @ytd);
+        SET @preturnstring = CONCAT('CustID: ', @pcustID, ' / Name: ', @custname, ' / Status: ', @status, ' / SalesYTD: ', @ytd);
 
     END TRY
 
@@ -306,16 +300,12 @@ GO
 BEGIN
 
     DECLARE @outputvalue NVARCHAR(100);
-    EXEc GET_CUSTOMER_STRING @pcustID = 1, @preturnstring = @outputvalue OUTPUT;
+    EXEc GET_CUSTOMER_STRING @pcustID = 4, @preturnstring = @outputvalue OUTPUT;
     print (@outputvalue)
 
 END
 
-*/
-
-/* UPD_CUST_SALESYTD ---------------------------------------------------------------------- COMPLETED 6/22 */
-
-/*
+/* UPD_CUST_SALESYTD --------------------------------- COMPLETED 6/22 */
 
 IF OBJECT_ID('UPD_CUST_SALESYTD') IS NOT NULL
 DROP PROCEDURE UPD_CUST_SALESYTD;
@@ -328,27 +318,20 @@ BEGIN
 
     BEGIN TRY
 
-        DECLARE @ytd money;
-        SELECT @ytd = sales_ytd from CUSTOMER where custid = @pcustid;
-
         IF @pamt < -999.99 OR @pamt > 999.99
             THROW 50080, 'Amount out of range', 1
 
-        ELSE 
-            BEGIN
-                UPDATE customer
-                set SALES_YTD = @ytd + @pamt
-                WHERE CUSTID = @pcustid
-            END
-
+        UPDATE customer
+        set SALES_YTD = SALES_YTD + @pamt
+        WHERE CUSTID = @pcustid
+            
+        if @@ROWCOUNT = 0
+            THROW 50070, 'UPD_CUST_SALESYTD Customer ID not found', 1
+    
     END TRY
 
     BEGIN CATCH
 
-        if @@ROWCOUNT = 0
-            THROW 50070, 'Customer ID not found', 1
-
-        ELSE
             BEGIN
                 DECLARE @errormessage NVARCHAR(max) = error_message();
                 THROW 50000, @errormessage, 1
@@ -360,19 +343,19 @@ END;
 
 GO
  
-EXEC UPD_CUST_SALESYTD @pcustid = 2, @pamt = 700.00;
-EXEC UPD_CUST_SALESYTD @pcustid = 3, @pamt = 100.00;
-EXEC UPD_CUST_SALESYTD @pcustid = 1, @pamt = 50.00;
+EXEC UPD_CUST_SALESYTD @pcustid = 1, @pamt = 100;
+EXEC UPD_CUST_SALESYTD @pcustid = 2, @pamt = 200;
+EXEC UPD_CUST_SALESYTD @pcustid = 3, @pamt = 100;
+EXEC UPD_CUST_SALESYTD @pcustid = 4, @pamt = 900;
+EXEC UPD_CUST_SALESYTD @pcustid = 5, @pamt = 500;
+EXEC UPD_CUST_SALESYTD @pcustid = 6, @pamt = 600;
+EXEC UPD_CUST_SALESYTD @pcustid = 7, @pamt = 300;
+EXEC UPD_CUST_SALESYTD @pcustid = 8, @pamt = 800;
+EXEC UPD_CUST_SALESYTD @pcustid = 9, @pamt = 700;
+EXEC UPD_CUST_SALESYTD @pcustid = 10, @pamt = 400;
+EXEC UPD_CUST_SALESYTD @pcustid = 11, @pamt = 900;
 
-Select *
-From customer;
-
-*/
-
-
-/* GET_PROD_STRING ----------------------------------------------------------------- COMPLETED 7/22 */
-
-/*
+/* GET_PROD_STRING ---------------------------------------- COMPLETED 7/22 */
 
 IF OBJECT_ID('GET_PROD_STRING') IS NOT NULL
 DROP PROCEDURE GET_PROD_STRING;
@@ -394,7 +377,7 @@ BEGIN
         IF @@ROWCOUNT = 0
             THROW 50090, 'Product ID not found', 1
         
-        SET @pReturnString = concat('Prodid: ', @pprodid, ' ','Name: ', @pprodname, ' ',  'Price: ' , @sellprice ,' ','SalesYTD: ',@ytd);
+        SET @pReturnString = concat('Prodid: ', @pprodid, ' / Name: ', @pprodname, ' / Price: ' , @sellprice ,' / SalesYTD: ',@ytd);
 
     END TRY
 
@@ -417,16 +400,12 @@ GO
 GO
 BEGIN
     DECLARE @externalParam NVARCHAR(100)
-    EXEC GET_PROD_STRING @pprodid = 1, @pReturnString = @externalParam OUTPUT
+    EXEC GET_PROD_STRING @pprodid = 1001, @pReturnString = @externalParam OUTPUT
     print @externalParam
 END 
 GO
 
-*/
-
-/* UPD_PROD_SALESYTD ---------------------------------------------------------------------- COMPLETED 8/22 */
-
-/*
+/* UPD_PROD_SALESYTD ----------------------------------- COMPLETED 8/22 */
 
 IF OBJECT_ID('UPD_PROD_SALESYTD') IS NOT NULL
 DROP PROCEDURE UPD_PROD_SALESYTD;
@@ -446,21 +425,18 @@ BEGIN
         set SALES_YTD = @pamt
         WHERE PRODID = @pprodid;
 
+        if @@ROWCOUNT = 0
+            THROW 50070, 'UPD_PROD_SALESYTD Customer ID not found', 1
+
     END TRY
 
     BEGIN CATCH
 
-        BEGIN
-
-            if @@ROWCOUNT = 0
-            THROW 50070, 'Customer ID not found', 1
-
-        ELSE
             BEGIN
                 DECLARE @errormessage NVARCHAR(max) = error_message();
                 THROW 50000, @errormessage, 1
             END
-        END
+        
 
     END CATCH;
 
@@ -468,21 +444,15 @@ END;
 
 GO
 
-
-exec UPD_PROD_SALESYTD @pprodid = 1, @pamt = 696
-exec UPD_PROD_SALESYTD @pprodid = 4, @pamt = 727
-
-select *
-from product
+exec UPD_PROD_SALESYTD @pprodid = 1001, @pamt = 111
+exec UPD_PROD_SALESYTD @pprodid = 1003, @pamt = 222
+exec UPD_PROD_SALESYTD @pprodid = 1004, @pamt = 333
+exec UPD_PROD_SALESYTD @pprodid = 1006, @pamt = 444
+exec UPD_PROD_SALESYTD @pprodid = 1007, @pamt = 555
 
 GO
 
-*/
-
-
-/* UPD_CUSTOMER_STATUS ---------------------------------------------------------------- COMPLETED 9/22 */
-
-/*
+/* UPD_CUSTOMER_STATUS ------------------------------------- COMPLETED 9/22 */
 
 IF OBJECT_ID('UPD_CUSTOMER_STATUS') IS NOT NULL
 DROP PROCEDURE UPD_CUSTOMER_STATUS;
@@ -520,16 +490,10 @@ END;
 
 GO
 
-exec UPD_CUSTOMER_STATUS @pcustid = 2, @pstatus = 'suspend';
+exec UPD_CUSTOMER_STATUS @pcustid = 1, @pstatus = 'suspend';
 
-select *
-from customer
 
-*/
-
-/* ADD_SIMPLE_SALE --------------------------------------------------------------------- COMPLETED 10/22 */
-
-/*
+/* ADD_SIMPLE_SALE ---------------------------------- COMPLETED 10/22 */
 
 IF OBJECT_ID('ADD_SIMPLE_SALE') IS NOT NULL
 DROP PROCEDURE ADD_SIMPLE_SALE;
@@ -579,23 +543,17 @@ END;
 
 GO
 
-BEGIN
-EXEC ADD_SIMPLE_SALE @pcustid = 1, @pprodid = 2, @pqty = 30;
-end
+
+delete from SALE
+
+GO
+
+EXEC ADD_SIMPLE_SALE @pcustid = 2, @pprodid = 1003, @pqty = 5;
 
 go
 
-select *
-from CUSTOMER
 
-select *
-from product
-
-*/
-
-/* SUM_CUSTOMER_SALESYTD -------------------------------------------------------------- COMPLETED 11/22 */
-
-/*
+/* SUM_CUSTOMER_SALESYTD ------------------------------ COMPLETED 11/22 */
 
 IF OBJECT_ID('SUM_CUSTOMER_SALESYTD') IS NOT NULL
 DROP PROCEDURE SUM_CUSTOMER_SALESYTD;
@@ -625,23 +583,13 @@ END;
 
 GO
 
-insert into customer values
-(5, 'Freddy', 1000, 'ok');
+BEGIN
+    declare @Cust_SalesYTD_Sum INT
+    exec @Cust_SalesYTD_Sum = SUM_CUSTOMER_SALESYTD;
+    print @Cust_SalesYTd_Sum
+END
 
-GO
-
--- works: the extra 1000 from Freddy is added to the return total
-declare @Cust_SalesYTD_Sum INT
-exec @Cust_SalesYTD_Sum = SUM_CUSTOMER_SALESYTD;
-print @Cust_SalesYTd_Sum
-
-go
-
-*/
-
-/* SUM_PRODUCT_SALESYTD --------------------------------------------------------------- COMPLETED 12/22 */
-
-/*
+/* SUM_PRODUCT_SALESYTD ---------------------------- COMPLETED 12/22 */
 
 IF OBJECT_ID('SUM_PRODUCT_SALESYTD') IS NOT NULL
 DROP PROCEDURE SUM_PRODUCT_SALESYTD;
@@ -667,25 +615,15 @@ BEGIN
 
 END;
 
-
-GO
-
--- insert into product values
--- (5, 'super beef', 30, 1000);
-
 go
 
--- first try: 1953 (adding a product with 1000 sales_ytd next)
--- second try: 2953, works
-declare @prod_SalesYTD_Sum INT
-exec @prod_SalesYTD_Sum = SUM_product_SALESYTD;
-print @prod_SalesYTd_Sum
+BEGIN
+    declare @prod_SalesYTD_Sum INT
+    exec @prod_SalesYTD_Sum = SUM_product_SALESYTD;
+    print @prod_SalesYTd_Sum
+END
 
-*/
-
-/* GET_ALL_CUSTOMERS ----------------------------------------------------------------------- COMPLETED 13/22 */
-
-/*
+/* GET_ALL_CUSTOMERS ----------------------------------- COMPLETED 13/22 */
 
 IF OBJECT_ID('GET_ALL_CUSTOMERS') IS NOT NULL
 DROP PROCEDURE GET_ALL_CUSTOMERS;
@@ -713,7 +651,7 @@ while @@FETCH_STATUS = 0
 
 BEGIN
     BEGIN TRY
-        print concat('ID: ', @custid, ', Name: ', @custname, ', YTD: ', @custytd, ', Status: ', @custstatus)
+        print concat('ID: ', @custid, ' / Name: ', @custname, ' / YTD: ', @custytd, ' / Status: ', @custstatus)
         fetch next from @outcustcur into @custid, @custname, @custytd, @custstatus;
     END TRY
     BEGIN CATCH
@@ -729,11 +667,7 @@ DEALLOCATE @outcustcur;
 
 end
 
-*/
-
-/* GET_ALL_PRODUCTS ---------------------------------------------------------------- COMPLETED 14/22 */
-
-/*
+/* GET_ALL_PRODUCTS --------------------------------- COMPLETED 14/22 */
 
 IF OBJECT_ID('GET_ALL_PRODUCTS') IS NOT NULL
 DROP PROCEDURE GET_ALL_PRODUCTS;
@@ -761,7 +695,7 @@ while @@FETCH_STATUS = 0
 
 BEGIN
     BEGIN TRY
-        print concat('ID: ', @prodid, ', Name: ', @prodname, ', Price: ', @prodprice, ', YTD: ', @prodytd)
+        print concat('ID: ', @prodid, ' / Name: ', @prodname, ' / Price: ', @prodprice, ' / YTD: ', @prodytd)
         fetch next from @outprodcur into @prodid, @prodname, @prodprice, @prodytd;
     END TRY
     BEGIN CATCH
@@ -777,11 +711,8 @@ DEALLOCATE @outprodcur;
 
 end
 
-*/
+/* ADD_LOCATION ---------------------------------- 15/22 */
 
-/* ADD_LOCATION -------------------------------------------------------------------- 15/22 */
-
-/*
 IF OBJECT_ID('ADD_LOCATION') IS NOT NULL
 DROP PROCEDURE ADD_LOCATION;
 
@@ -813,18 +744,18 @@ END;
 
 GO
 
-
 delete from [LOCATION]
-insert into [LOCATION] (locid, minqty, maxqty)
-VALUES ('loc69', 10, 100),
-('loc69', 10, 100)
-*/
 
+exec add_location @ploccode = "Loc01", @pminqty = 1, @pmaxqty = 500
+exec add_location @ploccode = "Loc02", @pminqty = 600, @pmaxqty = 999
+exec add_location @ploccode = "Loc03", @pminqty = 100, @pmaxqty = 300
+exec add_location @ploccode = "Loc04", @pminqty = 100, @pmaxqty = 700
+exec add_location @ploccode = "Loc05", @pminqty = 300, @pmaxqty = 400
+exec add_location @ploccode = "Loc06", @pminqty = 200, @pmaxqty = 800
+exec add_location @ploccode = "Loc07", @pminqty = 1, @pmaxqty = 999
 
+/* ADD_COMPLEX_SALE -------------------------------------- COMPLETED 16/22 */
 
-/* ADD_COMPLEX_SALE ------------------------------------------------------------------- COMPLETED 16/22 */
-
-/*
 IF OBJECT_ID('ADD_COMPLEX_SALE') IS NOT NULL
 DROP PROCEDURE ADD_COMPLEX_SALE;
 
@@ -860,8 +791,6 @@ BEGIN
 
         exec UPD_CUST_SALESYTD @pcustid = @pcustid, @pamt = @sum;
 
-        -- saleid comes out negative, not sure if supposed to
-
         insert into sale (saleid, custid, prodid, qty, price, saledate)
         values (@seq, @pcustid, @pprodid, @pqty, @price, @converteddate)
 
@@ -878,17 +807,16 @@ END;
 
 GO
 
-exec ADD_COMPLEX_SALE @pcustid = 1, @pprodid = 3, @pqty = 10, @pdate = 20200505;
+exec ADD_COMPLEX_SALE @pcustid = 7, @pprodid = 1001, @pqty = 15, @pdate = 20200511;
+exec ADD_COMPLEX_SALE @pcustid = 2, @pprodid = 1002, @pqty = 10, @pdate = 20190705;
+exec ADD_COMPLEX_SALE @pcustid = 3, @pprodid = 1003, @pqty = 20, @pdate = 20180920;
+exec ADD_COMPLEX_SALE @pcustid = 5, @pprodid = 1004, @pqty = 5, @pdate = 20170115;
+exec ADD_COMPLEX_SALE @pcustid = 6, @pprodid = 1005, @pqty = 10, @pdate = 20190310;
+exec ADD_COMPLEX_SALE @pcustid = 2, @pprodid = 1006, @pqty = 30, @pdate = 20200205;
 
-select * from SALE;
-select * from product;
+go 
 
-*/
-
-
-/* GET_ALLSALES ---------------------------------------------------------------- COMPLETED 17/22 */
-
-/*
+/* GET_ALLSALES -------------------------------------- COMPLETED 17/22 */
 
 IF OBJECT_ID('GET_ALLSALES') IS NOT NULL
 DROP PROCEDURE GET_ALLSALES;
@@ -903,43 +831,40 @@ BEGIN
     open @poutcur;
 END
 
+go
+
 BEGIN
 
+declare @oSales as cursor;
+declare @oSaleid bigint, @oCustid int, @oProdid int, @oQty int, @oPrice money, @oSalesDate DATE
+
+exec get_allsales @poutcur = @oSales output;
+
+fetch next from @oSales into @oSaleid, @oCustID, @oProdid, @oQty, @oPrice, @oSalesDate;
+while @@FETCH_STATUS= 0
+
+begin 
     BEGIN TRY
-
-        declare @oSales as cursor;
-        declare @oSaleid bigint, @oCustid int, @oProdid int, @oQty int, @oPrice money, @oSalesDate DATE
-
-        exec get_allsales @poutcur = @oSales output;
-
-        fetch next from @oSales into @oSaleid, @oCustID, @oProdid, @oQty, @oPrice, @oSalesDate;
-
-        begin 
-            print concat('sale id: ', @oSaleid, ', customer: ', @ocustid, ' product: ', @oprodid, ', quantity: ', @oqty, ', price: ', @oprice, ', sale date: ', @osalesdate)
-            fetch next from @osales into @osaleid, @ocustid, @oprodid, @oqty, @oprice, @oSalesDate;
-        END
-
-        close @osales;
-        DEALLOCATE @osales;
-
+        print concat('Sale ID: ', @oSaleid, ', Customer: ', @ocustid, ' Product: ', @oprodid, ', Quantity: ', @oqty, ', Price: ', @oprice, ', Sale Date: ', @osalesdate)
+        fetch next from @osales into @osaleid, @ocustid, @oprodid, @oqty, @oprice, @oSalesDate;
     END TRY
-
     BEGIN CATCH
         BEGIN
             declare @errormessage nvarchar(max) = error_message();
             throw 50000, @errormessage, 1
-        END;
+        END
     END CATCH
+END
 
-END;
+close @osales;
+DEALLOCATE @osales;
+
+END
 
 GO
 
-*/
-
 /* COUNT_PRODUCT_SALES ----------------------------------------------------------- 18/22 */
 
-/*
 IF OBJECT_ID('COUNT_PRODUCT_SALES') IS NOT NULL
 DROP PROCEDURE COUNT_PRODUCT_SALES;
 
@@ -971,19 +896,18 @@ END;
 GO
 
 declare @salescount INT
-exec @salescount = COUNT_PRODUCT_SALES @pdays = -10
-print concat()
-*/
+-- returns 2: only 2 sales have been made in the last year
+exec @salescount = COUNT_PRODUCT_SALES @pdays = -365
+print concat('Total sales: ', @salescount)
 
 /* DELETE_SALE ------------------------------------------------------------------- 19/22 */
-
 /*
-IF OBJECT_ID('') IS NOT NULL
-DROP PROCEDURE _;
+IF OBJECT_ID('DELETE_SALE') IS NOT NULL
+DROP PROCEDURE DELETE_SALE;
 
 go
 
-create procedure _ AS
+create procedure DELETE_SALE AS
 
 BEGIN
 
@@ -1003,11 +927,18 @@ BEGIN
 END;
 
 GO
+
+select*
+from SALE
+select *
+from CUSTOMER
+select *
+from product
+select *
+from [Location]
 */
 
-/* DELETE_ALL_SALES ------------------------------------------------------------------ COMPLETED 20/22 */
-
-/*
+/* DELETE_ALL_SALES ---------------------------------------- COMPLETED 20/22 */
 
 IF OBJECT_ID('DELETE_ALL_SALES') IS NOT NULL
 DROP PROCEDURE DELETE_ALL_SALES;
@@ -1038,19 +969,11 @@ END;
 
 GO
 
-exec DELETE_ALL_SALES
+-- works 
+-- exec DELETE_ALL_SALES
 
-go
-
-select * from PRODUCT
-select * from customer
-select * from sale
-
-*/
 
 /* DELETE_CUSTOMER ------------------------------------------------------------------ COMPLETED 21/22 */
-
-/*
 
 IF OBJECT_ID('DELETE_CUSTOMER') IS NOT NULL
 DROP PROCEDURE DELETE_CUSTOMER;
@@ -1069,9 +992,11 @@ BEGIN
 
     END TRY
 
--- still need to add THROW 50300, 'Customer cannot be deleted as sales exist', 1
-
     BEGIN CATCH
+        
+        if ERROR_NUMBER() = 547
+            THROW 50300, 'Customer cannot be deleted as sales exist', 1
+
         BEGIN
             declare @errormessage nvarchar(max) = error_message();
             throw 50000, @errormessage, 1
@@ -1082,15 +1007,10 @@ END;
 
 GO
 
-EXEC DELETE_CUSTOMER @pcustid = 2
-
-select * from CUSTOMER
-
-*/
+-- works: custid: 8 had no sales and id's on Customer table now go 6, 7, 9 (no 8)
+EXEC DELETE_CUSTOMER @pcustid = 8
 
 /* DELETE_PRODUCT ------------------------------------------------------------------ 22/22 */
-
-/*
 
 IF OBJECT_ID('DELETE_PRODUCT') IS NOT NULL
 DROP PROCEDURE DELETE_PRODUCT;
@@ -1102,14 +1022,17 @@ create procedure DELETE_PRODUCT @pprodid int AS
 BEGIN
 
     BEGIN TRY
-
         delete from product where prodid = @pprodid
         if @@rowcount = 0
             THROW 50310, 'product id not found', 1
-
     END TRY
 
     BEGIN CATCH
+        if ERROR_NUMBER() = 50310
+            throw
+        if ERROR_NUMBER() = 547
+            throw 50320, 'product cannot delete product as sales exist', 1
+
         BEGIN
             declare @errormessage nvarchar(max) = error_message();
             throw 50000, @errormessage, 1
@@ -1118,41 +1041,16 @@ BEGIN
 
 END;
 
-GO
+exec DELETE_PRODUCT @pprodid = 1002
 
-exec DELETE_PRODUCT @pprodid = 1
-
-
-
-select *
-from product
-
-/* quick tsql setup 
-
-IF OBJECT_ID('') IS NOT NULL
-DROP PROCEDURE _;
 
 go
 
-create procedure _ AS
-
-BEGIN
-
-    BEGIN TRY
-
-
-
-    END TRY
-
-    BEGIN CATCH
-        BEGIN
-            declare @errormessage nvarchar(max) = error_message();
-            throw 50000, @errormessage, 1
-        END
-    END CATCH;
-
-END;
-
-GO
-
-*/
+select*
+from SALE
+select *
+from CUSTOMER
+select *
+from product
+select *
+from [Location]
