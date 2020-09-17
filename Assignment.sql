@@ -138,7 +138,7 @@ BEGIN
 END;
 
 go
-
+-- works: prints '(2 rows affected) 2 customers deleted' 
 exec DELETE_ALL_CUSTOMERS
 
 go
@@ -239,6 +239,7 @@ END
 
 go
 
+--works: prints '(2 rows affected) 2 products deleted' 
 exec DELETE_ALL_PRODUCTS
 
 go
@@ -296,7 +297,7 @@ BEGIN
 END
 
 GO
-
+-- works: prints 'CustID: 4 / Name: Amy Adams / Status: OK / SalesYTD: 0.00' 
 BEGIN
 
     DECLARE @outputvalue NVARCHAR(100);
@@ -398,6 +399,7 @@ END;
 GO
 
 GO
+-- works: prints 'Prodid: 1001 / Name: Chicken / Price: 5.00 / SalesYTD: 0.00' 
 BEGIN
     DECLARE @externalParam NVARCHAR(100)
     EXEC GET_PROD_STRING @pprodid = 1001, @pReturnString = @externalParam OUTPUT
@@ -582,7 +584,7 @@ BEGIN
 END;
 
 GO
-
+-- works: prints sum of sales_ytd in customer table: 5700 
 BEGIN
     declare @Cust_SalesYTD_Sum INT
     exec @Cust_SalesYTD_Sum = SUM_CUSTOMER_SALESYTD;
@@ -616,7 +618,7 @@ BEGIN
 END;
 
 go
-
+-- works: prints sum of sales_ytd in product table: 1643 
 BEGIN
     declare @prod_SalesYTD_Sum INT
     exec @prod_SalesYTD_Sum = SUM_product_SALESYTD;
@@ -661,7 +663,7 @@ BEGIN
         END
     END CATCH
 END
-
+-- works: prints 'ID: 1 / Name: Tom Cruise / YTD: 100.00 / Status: suspend'
 close @outcustcur;
 DEALLOCATE @outcustcur;
 
@@ -896,12 +898,12 @@ END;
 GO
 
 declare @salescount INT
--- returns 2: only 2 sales have been made in the last year
+-- works: returns 2 and only 2 sales have been logged in the last 365 days
 exec @salescount = COUNT_PRODUCT_SALES @pdays = -365
 print concat('Total sales: ', @salescount)
 
-/* DELETE_SALE ------------------------------------------------------------------- 19/22 */
-/*
+/* DELETE_SALE ------------------------------------------- 19/22 */
+
 IF OBJECT_ID('DELETE_SALE') IS NOT NULL
 DROP PROCEDURE DELETE_SALE;
 
@@ -913,11 +915,27 @@ BEGIN
 
     BEGIN TRY
 
+        declare @minsale int, @prodid int, @custid int, @saleprice money
+        select @minsale = min(saleid) from sale;
+        delete from sale where saleid = @minsale;
 
+        if @minsale = null
+            throw 50280, 'no sale rows found', 1
+
+        else
+        declare @sum money, @saleqty INT
+        select @saleprice = price, @custid = custid, @saleqty = qty, @prodid = prodid
+        from sale where saleid = @minsale
+            set @sum = @saleqty * @saleprice
+        
+        exec UPD_CUST_SALESYTD @pcustid = @custid, @pamt = @sum;
+        exec UPD_PROD_SALESYTD @pprodid = @prodid, @pamt = @sum;
 
     END TRY
 
     BEGIN CATCH
+        if ERROR_NUMBER() = 50280
+            throw
         BEGIN
             declare @errormessage nvarchar(max) = error_message();
             throw 50000, @errormessage, 1
@@ -928,6 +946,10 @@ END;
 
 GO
 
+exec DELETE_SALE
+
+go
+
 select*
 from SALE
 select *
@@ -936,10 +958,10 @@ select *
 from product
 select *
 from [Location]
-*/
 
-/* DELETE_ALL_SALES ---------------------------------------- COMPLETED 20/22 */
 
+/* DELETE_ALL_SALES ----------------------------------- COMPLETED 20/22 */
+/*
 IF OBJECT_ID('DELETE_ALL_SALES') IS NOT NULL
 DROP PROCEDURE DELETE_ALL_SALES;
 
@@ -1042,15 +1064,3 @@ BEGIN
 END;
 
 exec DELETE_PRODUCT @pprodid = 1002
-
-
-go
-
-select*
-from SALE
-select *
-from CUSTOMER
-select *
-from product
-select *
-from [Location]
