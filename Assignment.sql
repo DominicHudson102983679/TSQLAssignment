@@ -1052,8 +1052,8 @@ END;
 
 go
 
--- works: deletes product with id 1003
-exec DELETE_PRODUCT @pprodid = 1003
+-- works: deletes product with id 1007. Returns error if smaller prodid is selected.
+exec DELETE_PRODUCT @pprodid = 1007
 
 select*
 from SALE
