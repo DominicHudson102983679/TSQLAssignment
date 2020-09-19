@@ -1,7 +1,6 @@
 use assignment
 
 /* to do
-19/22
 
 22/22 still need: 50320. Product cannot be deleted as sales exist
 
@@ -344,17 +343,17 @@ END;
 
 GO
  
-EXEC UPD_CUST_SALESYTD @pcustid = 1, @pamt = 100;
-EXEC UPD_CUST_SALESYTD @pcustid = 2, @pamt = 200;
-EXEC UPD_CUST_SALESYTD @pcustid = 3, @pamt = 100;
-EXEC UPD_CUST_SALESYTD @pcustid = 4, @pamt = 900;
-EXEC UPD_CUST_SALESYTD @pcustid = 5, @pamt = 500;
-EXEC UPD_CUST_SALESYTD @pcustid = 6, @pamt = 600;
-EXEC UPD_CUST_SALESYTD @pcustid = 7, @pamt = 300;
-EXEC UPD_CUST_SALESYTD @pcustid = 8, @pamt = 800;
-EXEC UPD_CUST_SALESYTD @pcustid = 9, @pamt = 700;
-EXEC UPD_CUST_SALESYTD @pcustid = 10, @pamt = 400;
-EXEC UPD_CUST_SALESYTD @pcustid = 11, @pamt = 900;
+EXEC UPD_CUST_SALESYTD @pcustid = 1, @pamt = 0;
+EXEC UPD_CUST_SALESYTD @pcustid = 2, @pamt = 0;
+EXEC UPD_CUST_SALESYTD @pcustid = 3, @pamt = 0;
+EXEC UPD_CUST_SALESYTD @pcustid = 4, @pamt = 0;
+EXEC UPD_CUST_SALESYTD @pcustid = 5, @pamt = 0;
+EXEC UPD_CUST_SALESYTD @pcustid = 6, @pamt = 0;
+EXEC UPD_CUST_SALESYTD @pcustid = 7, @pamt = 0;
+EXEC UPD_CUST_SALESYTD @pcustid = 8, @pamt = 0;
+EXEC UPD_CUST_SALESYTD @pcustid = 9, @pamt = 0;
+EXEC UPD_CUST_SALESYTD @pcustid = 10, @pamt = 0;
+EXEC UPD_CUST_SALESYTD @pcustid = 11, @pamt = 0;
 
 /* GET_PROD_STRING ---------------------------------------- COMPLETED 7/22 */
 
@@ -809,12 +808,11 @@ END;
 
 GO
 
-exec ADD_COMPLEX_SALE @pcustid = 7, @pprodid = 1001, @pqty = 15, @pdate = 20200511;
-exec ADD_COMPLEX_SALE @pcustid = 2, @pprodid = 1002, @pqty = 10, @pdate = 20190705;
-exec ADD_COMPLEX_SALE @pcustid = 3, @pprodid = 1003, @pqty = 20, @pdate = 20180920;
-exec ADD_COMPLEX_SALE @pcustid = 5, @pprodid = 1004, @pqty = 5, @pdate = 20170115;
-exec ADD_COMPLEX_SALE @pcustid = 6, @pprodid = 1005, @pqty = 10, @pdate = 20190310;
-exec ADD_COMPLEX_SALE @pcustid = 2, @pprodid = 1006, @pqty = 30, @pdate = 20200205;
+exec ADD_COMPLEX_SALE @pcustid = 2, @pprodid = 1002, @pqty = 2, @pdate = 20190705;
+exec ADD_COMPLEX_SALE @pcustid = 3, @pprodid = 1003, @pqty = 2, @pdate = 20180920;
+exec ADD_COMPLEX_SALE @pcustid = 4, @pprodid = 1004, @pqty = 2, @pdate = 20170115;
+exec ADD_COMPLEX_SALE @pcustid = 5, @pprodid = 1005, @pqty = 2, @pdate = 20190310;
+exec ADD_COMPLEX_SALE @pcustid = 6, @pprodid = 1006, @pqty = 2, @pdate = 20200205;
 
 go 
 
@@ -915,10 +913,9 @@ BEGIN
 
     BEGIN TRY
 
-        declare @minsale int, @prodid int, @custid int, @saleprice money
+        declare @minsale bigint, @prodid int, @custid int, @saleprice money
+        
         select @minsale = min(saleid) from sale;
-        delete from sale where saleid = @minsale;
-
         if @minsale = null
             throw 50280, 'no sale rows found', 1
 
@@ -926,10 +923,12 @@ BEGIN
         declare @sum money, @saleqty INT
         select @saleprice = price, @custid = custid, @saleqty = qty, @prodid = prodid
         from sale where saleid = @minsale
-            set @sum = @saleqty * @saleprice
+        set @sum = @saleqty * @saleprice
         
         exec UPD_CUST_SALESYTD @pcustid = @custid, @pamt = @sum;
         exec UPD_PROD_SALESYTD @pprodid = @prodid, @pamt = @sum;
+
+        delete from sale where saleid = @minsale;
 
     END TRY
 
@@ -1063,4 +1062,6 @@ BEGIN
 
 END;
 
-exec DELETE_PRODUCT @pprodid = 1002
+go
+
+exec DELETE_PRODUCT @pprodid = 1003
