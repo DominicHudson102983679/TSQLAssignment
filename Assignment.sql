@@ -1,9 +1,7 @@
 use assignment
 
 /* to do
-
-22/22 still need: 50320. Product cannot be deleted as sales exist
-
+dominic hudson - 102983679
 */
 
 
@@ -945,18 +943,8 @@ END;
 
 GO
 
+--works: deletes smallest sale
 exec DELETE_SALE
-
-go
-
-select*
-from SALE
-select *
-from CUSTOMER
-select *
-from product
-select *
-from [Location]
 
 
 /* DELETE_ALL_SALES ----------------------------------- COMPLETED 20/22 */
@@ -1064,4 +1052,14 @@ END;
 
 go
 
+-- works: deletes product with id 1003
 exec DELETE_PRODUCT @pprodid = 1003
+
+select*
+from SALE
+select *
+from CUSTOMER
+select *
+from product
+select *
+from [Location]
