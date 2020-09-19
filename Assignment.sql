@@ -961,7 +961,7 @@ from [Location]
 
 
 /* DELETE_ALL_SALES ----------------------------------- COMPLETED 20/22 */
-/*
+
 IF OBJECT_ID('DELETE_ALL_SALES') IS NOT NULL
 DROP PROCEDURE DELETE_ALL_SALES;
 
